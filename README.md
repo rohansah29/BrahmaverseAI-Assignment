@@ -1,8 +1,13 @@
 # Full Stack Developer Assignment
 
 This monorepo contains two independent tasks:
-- `apps/food-ordering-ui`: React + TypeScript + Vite food ordering UI.
+- `apps/food-ordering-ui`: React + JavaScript + Vite food ordering UI.
 - `apps/crm-api`: Express REST API using MongoDB/Mongoose, JWT and bcrypt.
+
+## Live deployments
+- Frontend: [https://brahmaverse-frontend.netlify.app/](https://brahmaverse-frontend.netlify.app/)
+- CRM API base URL: [https://brahmaverse-crm-api.onrender.com/](https://brahmaverse-crm-api.onrender.com/)
+- CRM API health check: [https://brahmaverse-crm-api.onrender.com/health](https://brahmaverse-crm-api.onrender.com/health)
 
 ## Requirements
 Node.js 20+, npm, Git, and MongoDB locally or a MongoDB Atlas cluster.
@@ -15,7 +20,7 @@ npm run install:all
 ```
 
 ## Configure CRM API
-Copy `apps/crm-api/.env.example` to `apps/crm-api/.env`. Set `MONGO_URL` and a random `JWT_SECRET` of at least 32 characters.
+Create `apps/crm-api/.env` and set `MONGO_URL` and a random `JWT_SECRET` of at least 32 characters. `PORT` is optional (defaults to `4000`); `JWT_EXPIRES_IN` and `CORS_ORIGIN` are also supported.
 ```bash
 npm run dev:api
 ```
@@ -52,8 +57,8 @@ Public enquiry: `{"name":"Student Name","email":"student@example.com","courseInt
 - The food app OTP flow is a UI prototype only; it does not send or verify real SMS.
 
 ## Deploy
-- Deploy `apps/food-ordering-ui` to Vercel (root directory: `apps/food-ordering-ui`, build command `npm run build`, output `dist`).
-- Deploy `apps/crm-api` to Render as a Node web service (root directory `apps/crm-api`, build `npm install`, start `npm start`). Configure `MONGO_URL`, `JWT_SECRET`, `CORS_ORIGIN`, and `NODE_ENV=production`. Use MongoDB Atlas for hosted database.
+- Frontend: deploy to Netlify from the repository root with build command `npm run build:web` and publish directory `apps/food-ordering-ui/dist`.
+- CRM API: deploy `apps/crm-api` to Render as a Node web service (root directory `apps/crm-api`, build `npm install`, start `npm start`). Configure `MONGO_URL`, `JWT_SECRET`, `CORS_ORIGIN=https://brahmaverse-frontend.netlify.app`, and `NODE_ENV=production`. Use MongoDB Atlas for hosted database.
 - Never commit `.env`. Test `/health` and all API flows after deployment.
 
 ## Test checklist
