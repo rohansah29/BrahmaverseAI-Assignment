@@ -1,0 +1,21 @@
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const { userRouter } = require("./routes/userRoutes");
+const { enquiryRouter } = require("./routes/enquiryRoutes");
+const app = express();
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173").split(",").map(origin => origin.trim()).filter(Boolean);
+app.disable("x-powered-by");
+app.use(helmet());
+app.use(cors({ origin: (origin, callback) => (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) ? callback(null, true) : callback(new Error("Origin not allowed by CORS")), methods: ["GET", "POST", "PATCH", "OPTIONS"], allowedHeaders: ["Content-Type", "Authorization"] }));
+app.use(express.json({ limit: "20kb" }));
+app.get("/health", (req, res) => res.status(200).send({ status: "ok", service: "crm-api" }));
+app.use("/api/auth", userRouter);
+app.use("/api/enquiries", enquiryRouter);
+app.use((req, res) => res.status(404).send({ error: "Route not found" }));
+app.use((error, req, res, next) => {
+    if (error.message === "Origin not allowed by CORS") return res.status(403).send({ error: error.message });
+    console.error(error);
+    res.status(500).send({ error: "Internal server error" });
+});
+module.exports = { app };

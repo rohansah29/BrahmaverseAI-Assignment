@@ -1,0 +1,12 @@
+{
+  "name": "fullstack-developer-assignment",
+  "private": true,
+  "workspaces": ["apps/food-ordering-ui", "apps/crm-api"],
+  "scripts": {
+    "install:all": "npm install",
+    "dev:web": "npm run dev --workspace @assignment/food-ordering-ui",
+    "build:web": "npm run build --workspace @assignment/food-ordering-ui",
+    "dev:api": "npm run dev --workspace @assignment/crm-api",
+    "start:api": "npm run start --workspace @assignment/crm-api"
+  }
+}
