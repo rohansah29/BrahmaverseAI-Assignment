@@ -2,14 +2,16 @@ import { X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { foods } from "../data/foods";
 import { money } from "../utils/format";
-import { removeItem, selectCart } from "../store/orderSlice";
+import { removeItem, selectCart, selectCartPrices } from "../store/orderSlice";
 
 export default function CartDrawer({ onClose }) {
   const dispatch = useDispatch();
   const cart = useSelector(selectCart);
+  const cartPrices = useSelector(selectCartPrices);
+  const unitPrice = (food) => cartPrices[food.id] ?? food.price;
   const entries = foods.filter((food) => (cart[food.id] || 0) > 0);
   const total = entries.reduce(
-    (sum, food) => sum + food.price * cart[food.id],
+    (sum, food) => sum + unitPrice(food) * cart[food.id],
     0,
   );
 
@@ -31,10 +33,10 @@ export default function CartDrawer({ onClose }) {
               <span>
                 <b>{food.name}</b>
                 <small>
-                  {cart[food.id]} × {money(food.price)}
+                  {cart[food.id]} × {money(unitPrice(food))}
                 </small>
               </span>
-              <strong>{money(food.price * cart[food.id])}</strong>
+              <strong>{money(unitPrice(food) * cart[food.id])}</strong>
               <button
                 onClick={() => dispatch(removeItem(food.id))}
                 aria-label={`Remove ${food.name}`}

@@ -1,1 +1,1 @@
-export const money = (amount) => `$${amount.toFixed(2)}`;
+export const money = (amount) => `₹${amount.toFixed(2)}`;

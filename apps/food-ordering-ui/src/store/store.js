@@ -1,8 +1,8 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { legacy_createStore, combineReducers } from "redux";
 import orderReducer from "./orderSlice";
 
-export const store = configureStore({
-  reducer: {
-    order: orderReducer,
-  },
+const rootReducer = combineReducers({
+  order: orderReducer,
 });
+
+export const store = legacy_createStore(rootReducer);

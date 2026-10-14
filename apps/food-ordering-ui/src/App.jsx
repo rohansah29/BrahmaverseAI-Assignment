@@ -40,13 +40,13 @@ export default function App() {
   };
 
   const addToCart = (food, amount = 1) => {
-    dispatch(addItem({ foodId: food.id, quantity: amount }));
+    dispatch(addItem({ foodId: food.id, quantity: amount, unitPrice: food.price }));
     notify(`${amount} × ${food.name} added to cart`);
   };
 
-  const saveProductToCart = () => {
+  const saveProductToCart = (unitPrice) => {
     const existingQuantity = cart[selectedFood.id] || 0;
-    dispatch(setItemQuantity({ foodId: selectedFood.id, quantity }));
+    dispatch(setItemQuantity({ foodId: selectedFood.id, quantity, unitPrice }));
     notify(
       existingQuantity
         ? `${selectedFood.name} cart quantity updated to ${quantity}`

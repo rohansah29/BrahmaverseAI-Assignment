@@ -1,41 +1,38 @@
-import { ArrowLeft, Check, Minus, Plus, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Minus, Plus } from "lucide-react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { foods } from "../data/foods";
 import { money } from "../utils/format";
 import {
-  selectCartCount,
-  selectCart,
   selectProductQuantity,
   selectSelectedFood,
   setProductQuantity,
 } from "../store/orderSlice";
 
-export default function ProductPage({
-  onBack,
-  onOpenCart,
-  onAddToCart,
-}) {
+export default function ProductPage({ onBack, onAddToCart }) {
   const dispatch = useDispatch();
   const food = useSelector((state) => selectSelectedFood(state, foods));
   const quantity = useSelector(selectProductQuantity);
-  const cartCount = useSelector(selectCartCount);
-  const cart = useSelector(selectCart);
-  const isInCart = Boolean(cart[food.id]);
-
+  const [selectedPortion, setSelectedPortion] = useState(0);
+  const portions = [
+    { label: "Personal (4 Slides)", price: "$0.00", extra: 0 },
+    { label: "Medium (8 Slides)", price: "$3.00", extra: 3 },
+    { label: "Familiar (10 Slides)", price: "$6.00", extra: 6 },
+    { label: "Jumbo (12 Slides)", price: "$10.00", extra: 10 },
+  ];
+  const unitPrice = food.price + portions[selectedPortion].extra;
   return (
-    <main className="app-page">
-      <header className="topbar">
-        <button className="icon-button" onClick={onBack} aria-label="Back to menu"><ArrowLeft /></button>
-        <b>Item details</b>
-        <button className="icon-button" onClick={onOpenCart} aria-label={`Open cart, ${cartCount} items`}>
-          <ShoppingBag />
-          <span className="count">{cartCount}</span>
+    <main className="app-page product-screen">
+      <header className="product-topbar">
+        <button className="product-back-button" onClick={onBack} aria-label="Back to menu">
+          <ArrowLeft size={19} />
         </button>
+        <h2>Product Details</h2>
       </header>
       <div className="product-page">
         <img className="hero-food" src={food.image} alt={food.name} />
         <div className="price-row">
-          <strong>{money(food.price)}</strong>
+          <strong>{money(unitPrice)}</strong>
           <div className="qty">
             <button aria-label="Decrease quantity" onClick={() => dispatch(setProductQuantity(quantity - 1))}>
               <Minus size={15} />
@@ -46,29 +43,32 @@ export default function ProductPage({
             </button>
           </div>
         </div>
-        <h1>{food.name}</h1>
-        <p className="description">{food.description}</p>
-        <div className="section-head">
-          <h2>Personal portion</h2>
-          <span>Choose quantity</span>
+        <h1>{food.id === 1 ? "Lorem ipsum dolor sit amet" : food.name}</h1>
+        <p className="description">{food.id === 1
+          ? "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore."
+          : food.description}</p>
+        <div className="portion-title">Personal portion</div>
+        <div className="portion-options" role="radiogroup" aria-label="Choose a portion">
+          {portions.map((portion, index) => {
+            const selected = selectedPortion === index;
+            return (
+              <button
+                type="button"
+                className="portion"
+                role="radio"
+                aria-checked={selected}
+                key={portion.label}
+                onClick={() => setSelectedPortion(index)}
+              >
+                <span>{portion.label}</span>
+                <b>{portion.price}</b>
+                <span className={selected ? "selected-dot" : "empty-dot"} />
+              </button>
+            );
+          })}
         </div>
-        <div className="portion">
-          <span>Single serving</span>
-          <b>{money(food.price)}</b>
-          <span className="selected-dot"><Check size={12} /></span>
-        </div>
-        <div className="portion">
-          <span>Double serving</span>
-          <b>{money(food.price * 1.7)}</b>
-          <span className="empty-dot" />
-        </div>
-        <div className="portion">
-          <span>Family serving</span>
-          <b>{money(food.price * 2.5)}</b>
-          <span className="empty-dot" />
-        </div>
-        <button className="primary add-button" onClick={onAddToCart}>
-          {isInCart ? "Done" : "Add to cart"} · {quantity} item{quantity === 1 ? "" : "s"} · {money(food.price * quantity)}
+        <button className="primary add-button" onClick={() => onAddToCart(unitPrice)}>
+          Add to cart
         </button>
       </div>
     </main>

@@ -1,9 +1,22 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { ChevronRight, Clock3, MapPin, Plus, Search, ShoppingBag } from "lucide-react";
+import { ChevronRight, Phone, Plus, Search, ShoppingBag } from "lucide-react";
 import { categories, foods } from "../data/foods";
 import { money } from "../utils/format";
 import { addItem, selectCart, selectCartCount } from "../store/orderSlice";
+
+const sellerItems = [
+  { food: foods[1], image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=420&q=85", price: "$103.0", name: "Sushi" },
+  { food: foods[1], image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=420&q=85", price: "$50.0", name: "Chicken curry" },
+  { food: foods[0], image: "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?auto=format&fit=crop&w=420&q=85", price: "$12.99", name: "Lasagna" },
+  { food: foods[3], image: "https://images.unsplash.com/photo-1486427944299-d1955d23e34d?auto=format&fit=crop&w=420&q=85", price: "$8.20", name: "Berry cupcake" },
+];
+
+const promoSlides = [
+  { title: "30% OFF", caption: "Experience our delicious new dish", image: foods[0].image },
+  { title: "20% OFF", caption: "Freshly made, just for you", image: foods[1].image },
+  { title: "Sweet break", caption: "Treat yourself to something nice", image: foods[4].image },
+];
 
 export default function HomePage({
   query,
@@ -15,8 +28,14 @@ export default function HomePage({
   onExploreOffers,
 }) {
   const dispatch = useDispatch();
-  const cart = useSelector(selectCart);
   const cartCount = useSelector(selectCartCount);
+  const cart = useSelector(selectCart);
+  const [slide, setSlide] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
+  useEffect(() => {
+    const timer = window.setInterval(() => setSlide((current) => (current + 1) % promoSlides.length), 3500);
+    return () => window.clearInterval(timer);
+  }, []);
   const filteredFoods = useMemo(
     () =>
       foods.filter(
@@ -28,108 +47,89 @@ export default function HomePage({
   );
 
   return (
-    <main className="app-page">
-      <header className="topbar">
-        <div>
-          <span className="eyebrow">Current location</span>
-          <div className="location">
-            <MapPin size={14} /> Model Town, New Delhi <ChevronRight size={14} />
-          </div>
-        </div>
-        <button className="cart-button" onClick={onOpenCart} aria-label={`Open cart, ${cartCount} items`}>
-          <ShoppingBag size={19} />
-          <span>{cartCount}</span>
-        </button>
+    <main className="app-page home-screen">
+      <div className="status-bar"></div>
+      <header className="home-location">
+        <span className="eyebrow">Current Locations</span>
+        <div className="location">Model Town, New Delhi <ChevronRight size={12} /></div>
       </header>
       <div className="home-content">
-        <div className="search-wrap">
-          <Search size={17} />
-          <input
-            aria-label="Search food"
-            placeholder="Search your favourite food"
-            value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
-          />
-          <button
-            onClick={() => {
-              onQueryChange("");
-              onCategoryChange("All");
-            }}
-          >
-            Clear
-          </button>
-        </div>
-        <div className="greeting">
-          <div>
-            <span className="eyebrow">Good food, good mood</span>
-            <h1>What are you craving?</h1>
-          </div>
-          <span className="avatar">F</span>
+        <div className="home-tools">
+          <div className="profile-name">Karan</div>
+          <button className="tool-button call-button" aria-label="Call restaurant"><Phone size={17} /></button>
+          <button className="tool-button wallet-button" onClick={onOpenCart} aria-label={`Open cart, ${cartCount} items`}><ShoppingBag size={17} /><span className="wallet-count">{cartCount}</span></button>
         </div>
         <div className="section-head">
           <h2>Best Seller</h2>
-          <span>Popular today</span>
+          <span />
         </div>
-        <div className="category-row">
-          {categories.map((item) => (
-            <button
-              key={item}
-              className={category === item ? "chip active" : "chip"}
-              onClick={() => onCategoryChange(item)}
-            >
-              {item}
+        <div className="seller-row">
+          {sellerItems.map((item) => (
+            <button className="seller-card" key={item.name} onClick={() => onSelectFood(item.food)} aria-label={`View ${item.name}`}>
+              <img src={item.image} alt={item.name} />
+              <b>{item.price}</b>
             </button>
           ))}
         </div>
-        <div className="food-grid">
-          {filteredFoods.slice(0, 4).map((food) => (
-            <article className="food-card" key={food.id}>
-              <button className="food-card-open" onClick={() => onSelectFood(food)} aria-label={`View ${food.name}`}>
-                <img src={food.image} alt={food.name} />
-                <span className="food-name">{food.name}</span>
-                <span className="food-meta">{food.category}</span>
-              </button>
-              <span className="food-card-bottom">
-                <b>{money(food.price)}</b>
-                <span className="food-card-actions">
-                  {cart[food.id] > 0 && <span className="food-quantity">{cart[food.id]}</span>}
-                  <button
-                    className="plus-circle"
-                    onClick={() => dispatch(addItem({ foodId: food.id, quantity: 1 }))}
-                    aria-label={`Add ${food.name} to cart`}
-                  >
-                    <Plus size={16} />
-                  </button>
-                </span>
-              </span>
-            </article>
+        <div className="promo-viewport" onTouchStart={(event) => setTouchStart(event.touches[0].clientX)} onTouchEnd={(event) => {
+          if (touchStart === null) return;
+          const delta = event.changedTouches[0].clientX - touchStart;
+          if (Math.abs(delta) > 35) setSlide((current) => (current + (delta < 0 ? 1 : promoSlides.length - 1)) % promoSlides.length);
+          setTouchStart(null);
+        }}>
+          {promoSlides.map((item, index) => (
+            <div className={`promo ${index === slide ? "active" : ""}`} key={item.title} aria-hidden={index !== slide}>
+              <div>
+                <span>{item.caption}</span>
+                <h2>{item.title}</h2>
+              </div>
+              <img src={item.image} alt="" onError={(event) => {
+                if (event.currentTarget.src !== foods[0].image) event.currentTarget.src = foods[0].image;
+              }} />
+            </div>
           ))}
         </div>
-        <div className="promo">
-          <div>
-            <span>CHEF&apos;S SPECIAL</span>
-            <h2>30% OFF</h2>
-            <p>Good things are on the menu.</p>
-            <button onClick={onExploreOffers}>Explore offers</button>
-          </div>
-          <img src={foods[0].image} alt="Pizza special" />
+        <div className="promo-dots" aria-label="Promotion slides">
+          {promoSlides.map((item, index) => <button className={index === slide ? "active" : ""} key={item.title} onClick={() => setSlide(index)} aria-label={`Show promotion ${index + 1}`} />)}
         </div>
         <div className="section-head">
           <h2>Popular Items</h2>
-          <span><Clock3 size={13} /> 20–30 min</span>
+          <span />
         </div>
         <div className="popular-list">
-          {foods.slice(1, 4).map((food) => (
-            <button className="popular-item" key={food.id} onClick={() => onSelectFood(food)}>
-              <img src={food.image} alt="" />
+          {[foods[4], foods[1]].map((food, index) => (
+            <div className="popular-item" key={food.id}>
+              <button className="popular-image-button" onClick={() => onSelectFood(food)} aria-label={`View ${food.name}`}>
+                <img src={food.image} alt="" />
+              </button>
               <span>
                 <b>{food.name}</b>
-                <small>{food.category} · Freshly prepared</small>
+                <small>{index === 0 ? "29 Nov, 01:20 pm" : "17 Oct, 01:20 pm"}</small>
+                <span className="order-actions"><button>Cancel Order</button><button onClick={() => onSelectFood(food)}>Track Driver</button></span>
               </span>
               <strong>{money(food.price)}</strong>
-              <ChevronRight size={16} />
-            </button>
+              <small className="item-count">{index === 0 ? "2 items" : "1 item"}</small>
+            </div>
           ))}
+        </div>
+        <div className="menu-section">
+          <div className="section-head menu-heading"><h2>Order Again</h2><span>Choose your favourites</span></div>
+          <div className="menu-filter">
+            <div className="menu-search"><Search size={15} /><input aria-label="Filter menu" placeholder="Search menu" value={query} onChange={(event) => onQueryChange(event.target.value)} /></div>
+            <div className="category-row">
+              {categories.map((item) => <button key={item} className={category === item ? "chip active" : "chip"} onClick={() => onCategoryChange(item)}>{item}</button>)}
+            </div>
+          </div>
+          <div className="menu-grid">
+            {filteredFoods.map((food) => (
+              <article className="food-card" key={food.id}>
+                <button className="food-card-open" onClick={() => onSelectFood(food)} aria-label={`View ${food.name}`}>
+                  <img src={food.image} alt={food.name} /><span className="food-name">{food.name}</span><span className="food-meta">{food.category}</span>
+                </button>
+                <span className="food-card-bottom"><b>{money(food.price)}</b><span className="food-card-actions">{cart[food.id] > 0 && <span className="food-quantity">{cart[food.id]}</span>}<button className="plus-circle" onClick={() => dispatch(addItem({ foodId: food.id, quantity: 1, unitPrice: food.price }))} aria-label={`Add ${food.name} to cart`}><Plus size={15} /></button></span></span>
+              </article>
+            ))}
+          </div>
         </div>
       </div>
     </main>

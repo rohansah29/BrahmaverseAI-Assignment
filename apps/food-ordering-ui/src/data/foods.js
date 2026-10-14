@@ -44,7 +44,7 @@ export const foods = [
     name: "Strawberry Shake",
     price: 20,
     image:
-      "https://images.unsplash.com/photo-1553787499-6f913324f5d0?auto=format&fit=crop&w=700&q=85",
+      "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=700&q=85",
     description: "A chilled strawberry milkshake made for a sweet break.",
     category: "Drinks",
   },
